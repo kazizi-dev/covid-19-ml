@@ -4,6 +4,8 @@ import math
 import helper1 as h
 import datetime
 from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 
 current_dir = os.getcwd()
@@ -33,7 +35,8 @@ def plot_age_and_sex():
 
         color_idx += 1
         plt.show()
-        plt.savefig('age_and_sex_distribution_bar_graph.png')
+        plt.savefig(f'./plots/age_distribution_for_{sex}.png')
+        plt.close()
    
 
 # show the percentage of sexes in a pie chart
@@ -51,11 +54,12 @@ def plot_sex_graph():
     
     plt.title('Sex Percentage', size = 12)
     plt.show()
-    plt.savefig('sex_distribution_pie_chart.png')
+    plt.savefig('./plots/sex_distribution_pie_chart.png')
+    plt.close()
 
 
 # show the percentage of outcomes in a pie chart
-def def_plot_outcome():
+def plot_outcome_graph():
     counts = list(cases_df.outcome.value_counts())
     labels = cases_df.outcome.value_counts()
     labels = cases_df.outcome.unique().tolist()
@@ -69,9 +73,28 @@ def def_plot_outcome():
     
     plt.title('Outcome Percentage', size = 12)
     plt.show()
-    plt.savefig('outcome_distribution_pie_chart.png')
+    plt.savefig('./plots/outcome_distribution_pie_chart.png')
+    plt.close()
 
-def 
+
+# display covid trend per outcome against time
+def plot_cases_against_time():
+    colors = ["green", "purple", "orange", "red"]
+    customPalette = sns.set_palette(sns.color_palette(colors))
+    cases_df['date_confirmation'] = pd.to_datetime(cases_df['date_confirmation'])
+
+    sns.lineplot(x='date_confirmation', 
+                y=range(len(cases_df['outcome'])), 
+                data=cases_df, 
+                hue='outcome')
+    
+    plt.title('Covid case trend', size = 12)
+    plt.ylabel('Total Cases')
+    plt.xlabel('Date')
+    plt.show()
+    plt.savefig('./plots/covid_trend_per_outcome.png')
+    plt.close()
+
 # ====================================
 # 1.2 Data Cleaning and Imputation
 # ====================================
@@ -178,7 +201,7 @@ file_path = './data/cases_train.csv'
 cases_df = pd.read_csv(file_path)
 
 ## display missing values for cases_train file
-print(f'------ null values for: {file_path} ------')
+print(f'---> null values for {file_path} file:')
 print(cases_df.isnull().sum())
 
 clean_sex_data()
@@ -187,11 +210,30 @@ cases_df = remove_unused_cols(cases_df)
 clean_date()
 clean_cols(["country", "province"])
 
-
 result_filename = './results/cases_train_processed.csv'
 cases_df.to_csv(result_filename, index=False)
 
+plot_age_and_sex()
+plot_sex_graph()
+plot_outcome_graph()
+plot_cases_against_time()
 
+
+file_path = './data/cases_test.csv'
+cases_df = pd.read_csv(file_path)
+
+## display missing values for cases_train file
+print(f'---> null values for {file_path} file:')
+print(cases_df.isnull().sum())
+
+clean_sex_data()
+impute_age_data(cases_df.age.tolist())
+cases_df = remove_unused_cols(cases_df)
+clean_date()
+clean_cols(["country", "province"])
+
+result_filename = './results/cases_test_processed.csv'
+cases_df.to_csv(result_filename, index=False)
 # ====================================
 # 1.4 TRANSFORMATION
 # ====================================
@@ -203,7 +245,7 @@ loc_csv = open(filename, 'rt')
 loc_df = pd.read_csv(filename)
 loc_csv.close()
 
-print(f'------ null values for: {filename} ------')
+print(f'---> null values for {filename} file:')
 print(loc_df.isnull().sum())
 
 
@@ -291,8 +333,3 @@ result_filename = './results/cases_joined.csv'
 joint_df.to_csv(result_filename, index=False)
 
 print("---------------------- program ended ----------------------")
-
-
-    
-    
-    
