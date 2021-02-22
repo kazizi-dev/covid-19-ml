@@ -112,8 +112,11 @@ def clean_age_data(arr):
                 split_arr = arr[i].split('-')
                 t0 = split_arr[0]
                 t1 = split_arr[1]
-                avg = (round((int(t0) + int(t1)) / 2)) if len(t1) > 0 else int(t0)
-                arr[i] = avg if avg > 0 else -avg
+                if str.isnumeric(t0) == True and str.isnumeric(t1) == True:
+                    avg = (round((int(t0) + int(t1)) / 2)) if len(t1) > 0 else int(t0)
+                    arr[i] = avg if avg > 0 else -avg
+                else:
+                    arr[i] = 0
             elif '+' in arr[i]:             # convert strings with '+' to int
                 split_arr = arr[i].split('+')
                 num = int(split_arr[0])
@@ -126,7 +129,7 @@ def clean_age_data(arr):
         elif isinstance(arr[i], float):   # round float values
                 arr[i] = int(round(arr[i]))
         elif isinstance(arr[i], int):     # convert negative int to positive
-            arr[i] = -arr[i] if arr[i] < 0 else arr[i]  
+            arr[i] = -arr[i] if arr[i] < 0 else arr[i]
 
     return arr
 
@@ -320,7 +323,7 @@ cases_df = pd.read_csv(filename)
 cases_csv.close()
 
 # Get transformed location dataset
-filename = './data/location_transformed.csv'
+filename = './results/location_transformed.csv'
 loc_csv = open(filename, 'rt')
 loc_df = pd.read_csv(filename)
 loc_csv.close()
@@ -329,7 +332,7 @@ loc_csv.close()
 joint_df = pd.merge(cases_df, loc_df, how="left")
 
 # writing to CSV
-result_filename = './results/cases_joined.csv'
-joint_df.to_csv(result_filename, index=False)
+# result_filename = './results/cases_joined.csv'
+# joint_df.to_csv(result_filename, index=False)
 
 print("---------------------- program ended ----------------------")
