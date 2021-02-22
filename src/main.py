@@ -299,14 +299,11 @@ for country in country_labels:
         new_row = h.combine_rows(country_df)
         rows.append(new_row)
 
-
 new_df = pd.DataFrame(rows)
-# print("before rename:")
-# print(new_df.iloc[0])
+
+# Rename columns to prepare for joining
 new_df.rename(columns={"Province_State": "province",
                        "Country_Region": "country"}, inplace=True)
-# print("after rename:")
-# print(new_df.iloc[0])
 
 # writing to CSV
 result_filename = './results/location_transformed.csv'
@@ -332,7 +329,7 @@ loc_csv.close()
 joint_df = pd.merge(cases_df, loc_df, how="left")
 
 # writing to CSV
-# result_filename = './results/cases_joined.csv'
-# joint_df.to_csv(result_filename, index=False)
+result_filename = './results/cases_joined.csv'
+joint_df.to_csv(result_filename, index=False)
 
 print("---------------------- program ended ----------------------")
