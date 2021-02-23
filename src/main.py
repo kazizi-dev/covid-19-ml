@@ -199,6 +199,29 @@ def remove_unused_cols(df):
 
     return df
 
+# ====================================
+# 1.3 DEALING WITH OUTLIERS
+# ====================================
+def handle_skewed_data(df):
+    Q1 = df.quantile(0.25)
+    Q3 = df.quantile(0.75)
+    IQR = Q3 - Q1
+    print(IQR)
+    longa = df['longitude'].quantile(0.10)
+    longb = df['longitude'].quantile(0.90)
+    lata = df['latitude'].quantile(0.10)
+    latb = df['latitude'].quantile(0.90)
+    df["longitude"] = np.where(df["longitude"] <longa, longa,df['longitude'])
+    df["longitude"] = np.where(df["longitude"] >longb, longb,df['longitude'])
+    df["latitude"] = np.where(df["latitude"] <lata, lata,df['latitude'])
+    df["latitude"] = np.where(df["latitude"] >lata, lata,df['latitude'])
+    print(df['longitude'].skew())
+    print(df['latitude'].skew())
+    index = df[(df['age'] >= 115)|(df['age'] <= 0)].index
+    df.drop(index, inplace=True)
+    df['age'].describe()
+    
+    return df[~((df < (Q1 - 1.5 * IQR)) |(df > (Q3 + 1.5 * IQR))).any(axis=1)]
 
 file_path = './data/cases_train.csv'
 cases_df = pd.read_csv(file_path)
