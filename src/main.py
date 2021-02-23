@@ -95,7 +95,24 @@ def plot_cases_against_time():
     plt.savefig('./plots/covid_trend_per_outcome.png')
     plt.close()
 
-# def plot_
+# display the covid cases based on longitude and latitude
+def plot_world_map(df):
+    df = df.filter(['Lat', 'Long_'], axis=1)
+    df = df.dropna()
+
+    plt.title('Confirmed cases based on Latitude/Longitude')
+    plt.scatter(df['Long_'], df['Lat'], marker='o', c='k', alpha=0.5, s=4)
+    plt.xlabel('Latitude')
+    plt.ylabel('Longitude')
+    plt.savefig('./plots/location_cases.png')
+
+def plot_country_with_most_death(df):
+    df = df.groupby(by='Country_Region').mean()
+    df = df.sort_values(by='Deaths', 
+                        ascending=True).tail(10).reset_index()
+
+    plt.barh(y=df['Country_Region'], width=df['Deaths'], color='brown')
+    plt.savefig('./plots/country_with_most_death.png')
 
 # ====================================
 # 1.2 Data Cleaning and Imputation
@@ -234,7 +251,7 @@ print(cases_df.isnull().sum())
 
 clean_sex_data()
 impute_age_data(cases_df.age.tolist())
-cases_df = handle_skewed_data(cases_df)
+# cases_df = handle_skewed_data(cases_df)
 cases_df = remove_unused_cols(cases_df)
 clean_date()
 clean_cols(["country", "province"])
@@ -274,6 +291,9 @@ filename = './data/location.csv'
 loc_csv = open(filename, 'rt')
 loc_df = pd.read_csv(filename)
 loc_csv.close()
+
+plot_world_map(loc_df.copy())
+plot_country_with_most_death(loc_df.copy())
 
 print(f'---> null values for {filename} file:')
 print(loc_df.isnull().sum())
