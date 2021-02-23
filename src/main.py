@@ -95,6 +95,8 @@ def plot_cases_against_time():
     plt.savefig('./plots/covid_trend_per_outcome.png')
     plt.close()
 
+# def plot_
+
 # ====================================
 # 1.2 Data Cleaning and Imputation
 # ====================================
@@ -144,7 +146,7 @@ def impute_age_data(arr):
     
     val = 0
     if val in cases_df['age'].values.tolist():
-        imputer = SimpleImputer(missing_values=val, strategy='mean')
+        imputer = SimpleImputer(missing_values=val, strategy='median')
         cases_df.age = imputer.fit_transform(cases_df['age'].values.reshape(-1,1))[:,0]
     else:
         print("Message: Impute already done")
@@ -206,7 +208,7 @@ def handle_skewed_data(df):
     Q1 = df.quantile(0.25)
     Q3 = df.quantile(0.75)
     IQR = Q3 - Q1
-    print(IQR)
+    # print(IQR)
     longa = df['longitude'].quantile(0.10)
     longb = df['longitude'].quantile(0.90)
     lata = df['latitude'].quantile(0.10)
@@ -215,8 +217,8 @@ def handle_skewed_data(df):
     df["longitude"] = np.where(df["longitude"] >longb, longb,df['longitude'])
     df["latitude"] = np.where(df["latitude"] <lata, lata,df['latitude'])
     df["latitude"] = np.where(df["latitude"] >lata, lata,df['latitude'])
-    print(df['longitude'].skew())
-    print(df['latitude'].skew())
+    df['longitude'].skew()
+    df['latitude'].skew()
     index = df[(df['age'] >= 115)|(df['age'] <= 0)].index
     df.drop(index, inplace=True)
     df['age'].describe()
@@ -232,6 +234,7 @@ print(cases_df.isnull().sum())
 
 clean_sex_data()
 impute_age_data(cases_df.age.tolist())
+# cases_df = handle_skewed_data(cases_df)
 cases_df = remove_unused_cols(cases_df)
 clean_date()
 clean_cols(["country", "province"])
@@ -353,7 +356,7 @@ loc_csv.close()
 joint_df = pd.merge(cases_df, loc_df, how="left")
 
 # writing to CSV
-result_filename = './results/cases_joined.csv'
-joint_df.to_csv(result_filename, index=False)
+# result_filename = './results/cases_joined.csv'
+# joint_df.to_csv(result_filename, index=False)
 
 print("---------------------- program ended ----------------------")
