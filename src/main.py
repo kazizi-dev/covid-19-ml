@@ -274,7 +274,7 @@ print(cases_df.isnull().sum())
 
 clean_sex_data()
 impute_age_data(cases_df.age.tolist())
-cases_df = handle_skewed_data(cases_df)
+# cases_df = handle_skewed_data(cases_df)
 cases_df = remove_unused_cols(cases_df)
 clean_date()
 clean_cols(["country", "province"])
