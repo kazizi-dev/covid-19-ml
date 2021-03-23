@@ -115,15 +115,14 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
 
 def overfit_test_rf(x_train, y_train, x_test, y_test):
     
-    values = [i for i in range(1, 101, 10)]
+    values = [i for i in range(1, 51, 5)]
     train_scores = []
     test_scores = []
     
     for i in values:
 
-        model = RandomForestClassifier(n_estimators=10,
-                                       random_state=0,
-                                       max_depth=i)
+        model = RandomForestClassifier(n_estimators=i,
+                                       random_state=0,)
         # evaluate train dataset
         model = model.fit(x_train, y_train)
         y_predict = model.predict(x_train)
@@ -136,13 +135,13 @@ def overfit_test_rf(x_train, y_train, x_test, y_test):
         acc_test = met.accuracy_score(y_test, y_predict)
         test_scores.append(acc_test)
 
-        print('      depth: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
+        print('      trees: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
 
     # Plot train and test scores
     pyplot.plot(values, train_scores, '-o', label='Train')
     pyplot.plot(values, test_scores, '-o', label='Test')
     pyplot.legend()
-    pyplot.xlabel("Depth of tree")
+    pyplot.xlabel("Number of trees")
     pyplot.ylabel("Accuracy")
     pyplot.savefig('../plots/overfit_test_random_forst.png')
     pyplot.show()
@@ -190,7 +189,7 @@ if __name__ == '__main__':
     os.chdir(os.getcwd())
 
     # read the processed data
-    df = pd.read_csv('../data/cases_train_processed.csv')
+    df = pd.read_csv('../data/cases_train_processed.csv')#[0:500]
 
     # split the dataset to train and test data
     print("...splitting and encoding data")
