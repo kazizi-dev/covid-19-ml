@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import numpy as np
 import pickle
@@ -9,7 +8,11 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report
+import os
 import matplotlib.pyplot as plt
+from sklearn import metrics as met
+from matplotlib import pyplot
+
 
 def split_dataset(df):
     """
@@ -76,7 +79,7 @@ def build_random_forest(x_train, y_train, x_test, y_test):
     with open(path, 'rb') as f:
         model = pickle.load(f)
 
-    print('>> Random Forst Model:')
+    print('>> Random Forest Model:')
     print(f'Train Accuracy: {model.score(x_train, y_train)}')
     print(f'Test Accuracy: {model.score(x_test, y_test)}')
 
@@ -110,6 +113,74 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
     print(classification_report(y_test, y_pred))
 
 
+def overfit_test_rf(x_train, y_train, x_test, y_test):
+    
+    values = [i for i in range(1, 101, 10)]
+    train_scores = []
+    test_scores = []
+    
+    for i in values:
+
+        model = RandomForestClassifier(n_estimators=10,
+                                       random_state=0,
+                                       max_depth=i)
+        # evaluate train dataset
+        model = model.fit(x_train, y_train)
+        y_predict = model.predict(x_train)
+        acc_train = met.accuracy_score(y_train, y_predict)
+        train_scores.append(acc_train)
+        
+        # evaluate test dataset
+        model = model.fit(x_test, y_test)
+        y_predict = model.predict(x_test)
+        acc_test = met.accuracy_score(y_test, y_predict)
+        test_scores.append(acc_test)
+
+        print('      depth: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
+
+    # Plot train and test scores
+    pyplot.plot(values, train_scores, '-o', label='Train')
+    pyplot.plot(values, test_scores, '-o', label='Test')
+    pyplot.legend()
+    pyplot.xlabel("Depth of tree")
+    pyplot.ylabel("Accuracy")
+    pyplot.savefig('../plots/overfit_test_random_forst.png')
+    pyplot.show()
+
+
+def overfit_test_ada(x_train, y_train, x_test, y_test):
+    
+    values = [i for i in range(1, 21, 2)]
+    train_scores = []
+    test_scores = []
+    
+    for i in values:
+
+        model = AdaBoostClassifier(n_estimators=10, learning_rate=i, random_state=0,)
+        # evaluate train dataset
+        model = model.fit(x_train, y_train)
+        y_predict = model.predict(x_train)
+        acc_train = met.accuracy_score(y_train, y_predict)
+        train_scores.append(acc_train)
+        
+        # evaluate test dataset
+        model = model.fit(x_test, y_test)
+        y_predict = model.predict(x_test)
+        acc_test = met.accuracy_score(y_test, y_predict)
+        test_scores.append(acc_test)
+
+        print('      learning rate: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
+
+    # Plot train and test scores
+    pyplot.plot(values, train_scores, '-o', label='Train')
+    pyplot.plot(values, test_scores, '-o', label='Test')
+    pyplot.legend()
+    pyplot.xlabel("Learning Rate")
+    pyplot.ylabel("Accuracy")
+    pyplot.savefig('../plots/overfit_test_ada_boost.png')
+    pyplot.show()
+    
+
 if __name__ == '__main__':
     print('--------------------------')
     import warnings
@@ -129,3 +200,9 @@ if __name__ == '__main__':
     build_ada_boost_model(x_train, y_train, x_test, y_test)
     print("...building Random Forest Model")
     build_random_forest(x_train, y_train, x_test, y_test)
+
+    print("...checking for overfitting")
+    print("   ADA Boost")
+    overfit_test_ada(x_train, y_train, x_test, y_test)
+    print("   Random Forest")
+    overfit_test_rf(x_train, y_train, x_test, y_test)
