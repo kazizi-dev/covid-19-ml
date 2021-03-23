@@ -23,17 +23,17 @@ def split_dataset(df):
 
     # one hot encode to prevent correlation
     enc = OneHotEncoder()
-    x_train = df.drop(['outcome', 'longitude', 'latitude', 'province'], axis=1).copy()
-    categorical_data = x_train[['sex', 'country']]
+    x_train = df.drop(['outcome'], axis=1).copy()
+    categorical_data = x_train[['sex', 'country', 'province']]   
     binary_data = enc.fit_transform(categorical_data).toarray()
     binary_labels = np.append(enc.categories_[0], enc.categories_[1])
+    binary_labels = np.append(binary_labels, enc.categories_[2])
 
     encoded_df = pd.DataFrame(binary_data, columns=binary_labels)
-    x_train = x_train.drop(['sex', 'country'], axis=1)
+    x_train = x_train.drop(['sex', 'country', 'province'], axis=1)
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
-
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
     return x_train, y_train, x_test, y_test
 
@@ -42,7 +42,7 @@ def build_ada_boost_model(x_train, y_train, x_test, y_test):
     model = AdaBoostClassifier(n_estimators=20, learning_rate=0.8, random_state=0)
     model = model.fit(x_train, y_train)
     
-    path = './models/ada_boost_model.pkl'
+    path = '../models/ada_boost_model.pkl'
     pickle.dump(model, open(path, 'wb'))
     model = pickle.load(open(path, 'rb'))
     
@@ -58,7 +58,7 @@ def build_random_forest(x_train, y_train, x_test, y_test):
     model = RandomForestClassifier(n_estimators=10, random_state=0)
     model.fit(x_train, y_train)
 
-    path = './models/random_forst_model.pkl'
+    path = '../models/random_forst_model.pkl'
     pickle.dump(model, open(path, 'wb'))
     model = pickle.load(open(path, 'rb'))
 
@@ -73,11 +73,13 @@ if __name__ == '__main__':
     os.chdir(os.getcwd())
 
     # read the processed data
-    df = pd.read_csv('./data/cases_train_processed.csv')
+    df = pd.read_csv('../data/cases_train_processed.csv')
 
     # split the dataset to train and test data
+    print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
 
-
+    print("...building ADABoost Model")
     build_ada_boost_model(x_train, y_train, x_test, y_test)
+    print("...building Random Forest Model")
     build_random_forest(x_train, y_train, x_test, y_test)
