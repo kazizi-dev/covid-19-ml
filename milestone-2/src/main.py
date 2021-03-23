@@ -10,29 +10,31 @@ import pickle
 import csv
 
 
-def encode_dataset(df):
-    """
-    convert string attributes to numeric using label encoder
-    """
-    
-    attributes = ['sex', 'province', 'country', 'date_confirmation', 'outcome']
-    label_encode = LabelEncoder()
-
-    for attribute in attributes:
-        df[attribute] = label_encode.fit_transform(df[attribute].astype(str))
-
-
 def split_dataset(df):
     """
-    Split the dataset to 80:20
+    encode string attributes to convert to numeric values using label and one hot encoder
     """
     
-    encode_dataset(df)
+    # label encode date_confirmation attribute:
+    df['date_confirmation'] = LabelEncoder().fit_transform(df['date_confirmation'].astype(str))
 
-    x = df.drop('outcome', axis=1)
-    y = df['outcome']
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+    y_train = df[['outcome']].values
+    y_train = y_train.ravel()
 
+    # one hot encode to prevent correlation
+    enc = OneHotEncoder()
+    x_train = df.drop(['outcome', 'longitude', 'latitude', 'province'], axis=1).copy()
+    categorical_data = x_train[['sex', 'country']]
+    binary_data = enc.fit_transform(categorical_data).toarray()
+    binary_labels = np.append(enc.categories_[0], enc.categories_[1])
+
+    encoded_df = pd.DataFrame(binary_data, columns=binary_labels)
+    x_train = x_train.drop(['sex', 'country'], axis=1)
+
+    # append converted data and numerical data
+    x_train = x_train.join(encoded_df)
+
+    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
     return x_train, y_train, x_test, y_test
 
 
@@ -44,6 +46,7 @@ def build_ada_boost_model(x_train, y_train, x_test, y_test):
     pickle.dump(model, open(path, 'wb'))
     model = pickle.load(open(path, 'rb'))
     
+    print('>> Ada Boost Model:')
     print(f'Train Accuracy: {model.score(x_train, y_train)}')
     print(f'Test Accuracy: {model.score(x_test, y_test)}')
 
@@ -51,83 +54,17 @@ def build_ada_boost_model(x_train, y_train, x_test, y_test):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~ 2.2 RANDOM FORESTS ~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def build_random_forests():
-    # # ~~~~ Get data ~~~~
-    filename = 'data/cases_train_processed.csv'
-    training = open(filename, 'rt')
-    csv_reader = csv.reader(training, dialect = 'excel')
-    training_df = pd.read_csv(filename)
-    training.close()
+def build_random_forest(x_train, y_train, x_test, y_test):
+    model = RandomForestClassifier(n_estimators=10, random_state=0)
+    model.fit(x_train, y_train)
 
-    # ~~~~ Split data and labels ~~~~
-    # dropped all location columns except for country
-    # to minimize use of one hot encoding
-    training_labels = training_df[['outcome']].values
-    training_labels = training_labels.ravel()
-    training_data = training_df.drop(['outcome',
-                                    'date_confirmation',
-                                    'longitude',
-                                    'latitude',
-                                    'province'], axis=1)
+    path = './models/random_forst_model.pkl'
+    pickle.dump(model, open(path, 'wb'))
+    model = pickle.load(open(path, 'rb'))
 
-    # ~~~~ One hot encoding ~~~~
-    one_hot_enc = OneHotEncoder()
-    categorical_data = training_data[['sex', 'country']]
-
-    binary_data = one_hot_enc.fit_transform(categorical_data).toarray()
-    binary_labels = np.append(one_hot_enc.categories_[0], one_hot_enc.categories_[1])
-
-    encoded_df = pd.DataFrame(binary_data, columns=binary_labels)
-
-    # numerical data
-    numerical_df = training_data.drop(['sex', 'country'], axis=1)
-
-    # append converted data and numerical data
-    numerical_df = numerical_df.join(encoded_df)
-
-    # fill NaN values
-    print("...filling NaN values")
-    filled_encoded_df = numerical_df.fillna(value=0)
-
-    # ~~~~ Classifier ~~~~
-    print("...building model")
-    rand_forest_clf = RandomForestClassifier()
-
-    model = rand_forest_clf.fit(filled_encoded_df, training_labels)
-
-    # save model
-    print("...saving model")
-    pkl_filename = "./models/rf_classifier.pkl"
-    with open(pkl_filename, 'wb') as file:
-        pickle.dump(model, file)
-
-
-    '''
-    # writing to CSV
-    filled_encoded_df = filled_encoded_df.join(training_df[['outcome']])
-    print("...writing to csv")
-    result_filename = 'data/cases_joined_converted.csv'
-    #numerical_df.to_csv(result_filename, index=False)
-    filled_encoded_df.to_csv(result_filename, index=False)
-    '''
-
-    filled_encoded_df = filled_encoded_df.join(training_df[['outcome']])
-
-    # Load model
-    print("...loading model")
-    pkl_filename = "./models/rf_classifier.pkl"
-    with open(pkl_filename, 'rb') as file:
-        pickle_model = pickle.load(file)
-
-    # Use model
-    print("...using model on data")
-    Xdata = filled_encoded_df.drop(['outcome'], axis=1)
-    Ydata = filled_encoded_df[['outcome']]
-
-    # print score
-    score = pickle_model.score(Xdata, Ydata)
-    print("Train score: {0:.2f} %".format(100 * score))
-    Ypredict = pickle_model.predict(Xdata)
+    print('>> Random Forst Model:')
+    print(f'Train Accuracy: {model.score(x_train, y_train)}')
+    print(f'Test Accuracy: {model.score(x_test, y_test)}')
 
 
 if __name__ == '__main__':
@@ -141,6 +78,6 @@ if __name__ == '__main__':
     # split the dataset to train and test data
     x_train, y_train, x_test, y_test = split_dataset(df)
 
-    build_ada_boost_model(x_train, y_train, x_test, y_test)
 
-    # build_random_forests()
+    build_ada_boost_model(x_train, y_train, x_test, y_test)
+    build_random_forest(x_train, y_train, x_test, y_test)
