@@ -1,14 +1,15 @@
+import os
 import pandas as pd
 import numpy as np
+import pickle
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
-import os
-import pickle
-import csv
-
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
 
 def split_dataset(df):
     """
@@ -38,7 +39,13 @@ def split_dataset(df):
     return x_train, y_train, x_test, y_test
 
 
+##############################
+###### 2.2 Build models ######
+##############################
 def build_ada_boost_model(x_train, y_train, x_test, y_test):
+    """
+    build and save a boost model using AdaBoostClassifier from sklearn
+    """
     model = AdaBoostClassifier(n_estimators=20, learning_rate=0.8, random_state=0)
     model = model.fit(x_train, y_train)
     
@@ -50,25 +57,64 @@ def build_ada_boost_model(x_train, y_train, x_test, y_test):
     print(f'Train Accuracy: {model.score(x_train, y_train)}')
     print(f'Test Accuracy: {model.score(x_test, y_test)}')
 
+    cross_validation_eval(model, x_train, y_train)
+    print_classification_report(model, x_train, y_train, x_test, y_test)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~ 2.2 RANDOM FORESTS ~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 def build_random_forest(x_train, y_train, x_test, y_test):
+    """
+    build random forst classifier using RandomForestClassifier from sklearn
+    """
+
     model = RandomForestClassifier(n_estimators=10, random_state=0)
     model.fit(x_train, y_train)
 
     path = '../models/random_forst_model.pkl'
-    pickle.dump(model, open(path, 'wb'))
-    model = pickle.load(open(path, 'rb'))
+    with open(path, 'wb') as f:
+        pickle.dump(model, f)
+
+    with open(path, 'rb') as f:
+        model = pickle.load(f)
 
     print('>> Random Forst Model:')
     print(f'Train Accuracy: {model.score(x_train, y_train)}')
     print(f'Test Accuracy: {model.score(x_test, y_test)}')
 
+    cross_validation_eval(model, x_train, y_train)
+    print_classification_report(model, x_train, y_train, x_test, y_test)
+
+
+##############################
+####### 2.3 Evaluation #######
+##############################
+def cross_validation_eval(model, x_train, y_train):
+    """
+    """
+    scores = cross_val_score(model, x_train, y_train, scoring='accuracy', cv = 10)
+
+    print(f'10-fold CV for the model: \n{scores}')
+    print(f'CV Accuracy for the model: {scores.mean()*100}')
+
+
+def print_classification_report(model, x_train, y_train, x_test, y_test):
+    # stdsc = StandardScaler()
+
+    # x_train_std = stdsc.fit_transform(x_train)
+    print('--- Classification report for train data:')
+    y_pred = model.predict(x_train)
+    print(classification_report(y_train, y_pred))
+
+    # x_test_std = stdsc.fit_transform(x_test)
+    print('--- Classification report for test data:')
+    y_pred = model.predict(x_test)
+    print(classification_report(y_test, y_pred))
+
 
 if __name__ == '__main__':
     print('--------------------------')
+    import warnings
+    warnings.filterwarnings("ignore")
+
     # setup path for main.py file
     os.chdir(os.getcwd())
 
