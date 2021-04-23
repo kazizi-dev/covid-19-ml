@@ -59,6 +59,7 @@ def get_grid_search_cv(x_train, y_train, model):
 
     scoring = {
         'f1_score_on_deceased' : make_scorer(f1_score, average='micro', labels=['deceased']),
+        'overall_f1_score': make_scorer(f1_score, average='weighted'),
         'overall_accuracy': make_scorer(accuracy_score),
         'recall_on_deceased' : make_scorer(recall_score, average='micro', labels=['deceased']),
         'overall_recall': make_scorer(recall_score , average='weighted')
@@ -97,6 +98,8 @@ def start_ada_boost():
                                                 'param_n_estimators', 
                                                 'mean_test_f1_score_on_deceased', 
                                                 'rank_test_f1_score_on_deceased', 
+                                                'mean_test_overall_f1_score',
+                                                'rank_test_overall_f1_score', 
                                                 'mean_test_overall_accuracy', 
                                                 'rank_test_overall_accuracy', 
                                                 'mean_test_recall_on_deceased', 
