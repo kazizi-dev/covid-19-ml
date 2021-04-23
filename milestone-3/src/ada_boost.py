@@ -52,8 +52,8 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
 
 def get_grid_search_cv(x_train, y_train, model):
     params = {
-        'n_estimators': [10, 20], 
-        'learning_rate': [1, 0.1], 
+        'n_estimators': [10, 100, 1000], 
+        'learning_rate': [1, 0.5, 0.1], 
         'algorithm': ['SAMME', 'SAMME.R']
     }
 
@@ -80,7 +80,7 @@ def start_ada_boost():
     os.chdir(os.getcwd())
 
     ########### split and encode data ###########
-    df = pd.read_csv('../data/cases_less.csv')[0:5000]
+    df = pd.read_csv('../data/cases_train_processed.csv')
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
@@ -92,7 +92,9 @@ def start_ada_boost():
     gs = get_grid_search_cv(x_train, y_train, ada_model)
 
     gs_results = pd.DataFrame(gs.cv_results_)[['mean_fit_time', 
-                                                'params', 
+                                                'param_algorithm',
+                                                'param_learning_rate',
+                                                'param_n_estimators', 
                                                 'mean_test_f1_score_on_deceased', 
                                                 'rank_test_f1_score_on_deceased', 
                                                 'mean_test_overall_accuracy', 
@@ -101,7 +103,7 @@ def start_ada_boost():
                                                 'rank_test_recall_on_deceased', 
                                                 'mean_test_overall_recall', 
                                                 'rank_test_overall_recall']]
-                                                
+
     gs_results.to_csv('../results/tunning-results-ada-boost.csv')
 
     ########### train and predict with model ###########
