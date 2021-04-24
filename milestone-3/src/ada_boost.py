@@ -75,12 +75,12 @@ def get_grid_search_cv(x_train, y_train, model):
     gs.fit(x_train, y_train)
     return gs
 
-def start_ada_boost():
+def start_ada_boost(csv_path):
     warnings.filterwarnings("ignore")
     os.chdir(os.getcwd())
 
     ########### split and encode data ###########
-    df = pd.read_csv('../data/cases_train_processed.csv')
+    df = pd.read_csv(csv_path)
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
@@ -119,12 +119,14 @@ def start_ada_boost():
     ada_model = pickle.load(open(path, 'rb'))
 
 
-# start_ada_boost()
+start_ada_boost('../data/cases_train_processed.csv')
 
+
+### manually train the model on a given parameters NE and LR
 def test(csv_path, NE, LR):
     import warnings
     warnings.filterwarnings("ignore")
-    
+
     # setup path for main.py file
     os.chdir(os.getcwd())
 
@@ -150,4 +152,4 @@ def test(csv_path, NE, LR):
     ada_model = pickle.load(open(path, 'rb'))
 
 
-test('../data/cases_train_processed.csv', 1000, 1)
+# test('../data/cases_train_processed.csv', 1000, 1)
