@@ -15,6 +15,8 @@ from matplotlib import pyplot
 
 from sklearn.metrics import make_scorer, accuracy_score, recall_score, f1_score, precision_score
 
+import warnings
+
 
 def split_dataset(df):
     """
@@ -47,25 +49,6 @@ def split_dataset(df):
 ##############################
 ###### 2.2 Build models ######
 ##############################
-'''
-def build_ada_boost_model(x_train, y_train, x_test, y_test):
-    """
-    build and save a boost model using AdaBoostClassifier from sklearn
-    """
-    model = AdaBoostClassifier(n_estimators=20, learning_rate=0.8, random_state=0)
-    model = model.fit(x_train, y_train)
-    
-    path = '../models/ada_boost_model.pkl'
-    pickle.dump(model, open(path, 'wb'))
-    model = pickle.load(open(path, 'rb'))
-    
-    print('>> Ada Boost Model:')
-    print(f'Train Accuracy: {model.score(x_train, y_train)}')
-    print(f'Test Accuracy: {model.score(x_test, y_test)}')
-
-    cross_validation_eval(model, x_train, y_train)
-    print_classification_report(model, x_train, y_train, x_test, y_test)
-'''
 
 def build_random_forest(x_train, y_train, x_test, y_test):
     """
@@ -97,8 +80,6 @@ def build_random_forest(x_train, y_train, x_test, y_test):
         cross_validation_eval(model, x_train, y_train)
         print_classification_report(model, x_train, y_train, x_test, y_test)
     
-    
-
 
 ##############################
 ####### 2.3 Evaluation #######
@@ -138,82 +119,16 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
     print(test_report)
 
 
-'''
-def overfit_test_rf(x_train, y_train, x_test, y_test):
-    
-    values = [i for i in range(1, 51, 5)]
-    train_scores = []
-    test_scores = []
-    
-    for i in values:
-
-        model = RandomForestClassifier(n_estimators=i,
-                                       random_state=0,)
-        # evaluate train dataset
-        model = model.fit(x_train, y_train)
-        y_predict = model.predict(x_train)
-        acc_train = met.accuracy_score(y_train, y_predict)
-        train_scores.append(acc_train)
-        
-        # evaluate test dataset
-        model = model.fit(x_test, y_test)
-        y_predict = model.predict(x_test)
-        acc_test = met.accuracy_score(y_test, y_predict)
-        test_scores.append(acc_test)
-
-        print('      trees: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
-
-    # Plot train and test scores
-    pyplot.plot(values, train_scores, '-o', label='Train')
-    pyplot.plot(values, test_scores, '-o', label='Test')
-    pyplot.legend()
-    pyplot.xlabel("Number of trees")
-    pyplot.ylabel("Accuracy")
-    pyplot.savefig('../plots/overfit_test_random_forst.png')
-    pyplot.show()
-
-
-def overfit_test_ada(x_train, y_train, x_test, y_test):
-    
-    values = [i for i in range(1, 21, 2)]
-    train_scores = []
-    test_scores = []
-    
-    for i in values:
-
-        model = AdaBoostClassifier(n_estimators=10, learning_rate=i, random_state=0,)
-        # evaluate train dataset
-        model = model.fit(x_train, y_train)
-        y_predict = model.predict(x_train)
-        acc_train = met.accuracy_score(y_train, y_predict)
-        train_scores.append(acc_train)
-        
-        # evaluate test dataset
-        model = model.fit(x_test, y_test)
-        y_predict = model.predict(x_test)
-        acc_test = met.accuracy_score(y_test, y_predict)
-        test_scores.append(acc_test)
-
-        print('      learning rate: %d, train: %.3f, test: %.3f' % (i, acc_train, acc_test))
-
-    # Plot train and test scores
-    pyplot.plot(values, train_scores, '-o', label='Train')
-    pyplot.plot(values, test_scores, '-o', label='Test')
-    pyplot.legend()
-    pyplot.xlabel("Learning Rate")
-    pyplot.ylabel("Accuracy")
-    pyplot.savefig('../plots/overfit_test_ada_boost.png')
-    pyplot.show()
-'''
-
 def get_grid_search_cv(x_train, y_train, model):
-    params = {
-        'n_estimators': [10, 100, 1000, 3000] 
+    params= {  
+        'n_estimators': [10, 100, 1000],
+        'max_features': ['auto', 'sqrt', 'log2'],
+        'max_depth' : [None, 2, 10, 25, 50, 100],
+        'criterion' :['gini', 'entropy']
     }
 
     scoring = {
         'f1_score_on_deceased' : make_scorer(f1_score, average='micro', labels=['deceased']),
-        'overall_f1_score': make_scorer(f1_score, average='weighted'),
         'overall_accuracy': make_scorer(accuracy_score),
         'recall_on_deceased' : make_scorer(recall_score, average='micro', labels=['deceased']),
         'overall_recall': make_scorer(recall_score , average='weighted')
@@ -223,7 +138,7 @@ def get_grid_search_cv(x_train, y_train, model):
         model, 
         param_grid = params, 
         scoring = scoring, 
-        n_jobs = 2, 
+        n_jobs = -1, 
         refit = 'f1_score_on_deceased'
     )
 
@@ -235,7 +150,7 @@ def start_random_forest():
     os.chdir(os.getcwd())
 
     ########### split and encode data ###########
-    df = pd.read_csv('../data/cases_train_processed.csv')
+    df = pd.read_csv('../data/cases_less.csv')
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
@@ -247,11 +162,12 @@ def start_random_forest():
     gs = get_grid_search_cv(x_train, y_train, rf_model)
 
     gs_results = pd.DataFrame(gs.cv_results_)[['mean_fit_time',
-                                                'param_n_estimators', 
+                                                'param_n_estimators',
+                                                'param_max_features',
+                                                'param_max_depth', 
+                                                'param_criterion',
                                                 'mean_test_f1_score_on_deceased', 
                                                 'rank_test_f1_score_on_deceased', 
-                                                'mean_test_overall_f1_score',
-                                                'rank_test_overall_f1_score', 
                                                 'mean_test_overall_accuracy', 
                                                 'rank_test_overall_accuracy', 
                                                 'mean_test_recall_on_deceased', 
@@ -273,65 +189,8 @@ def start_random_forest():
     pickle.dump(rf_model, open(path, 'wb'))
     rf_model = pickle.load(open(path, 'rb'))
 
-if __name__ == '__main__':
-    print('--------------------------')
-    import warnings
-    warnings.filterwarnings("ignore")
+    print("***************************** end *****************************\n")
 
-    # setup path for main.py file
-    os.chdir(os.getcwd())
 
-    # read the processed data
-    '''
-    df = pd.read_csv('../data/cases_train_processed.csv')#[0:500]
 
-    # split the dataset to train and test data
-    print("...splitting and encoding data")
-    x_train, y_train, x_test, y_test = split_dataset(df)
-    #print(x_train.columns.tolist())
-
-    #print("...building ADABoost Model")
-    #build_ada_boost_model(x_train, y_train, x_test, y_test)
-    print("...building Random Forest Model")
-    #build_random_forest(x_train, y_train, x_test, y_test)
-
-    #print("...checking for overfitting")
-    #print("   ADA Boost")
-    #overfit_test_ada(x_train, y_train, x_test, y_test)
-    #print("   Random Forest")
-    #overfit_test_rf(x_train, y_train, x_test, y_test)
-    
-    #ada_model = AdaBoostClassifier()
-    rf_model = RandomForestClassifier()
-
-    params = {
-        'n_estimators': [100, 1000, 2000, 3000] 
-    }
-    
-    scoring = {
-        'overall_f1_score' : make_scorer(f1_score, average='weighted'),
-        'recall_on_deceased' : make_scorer(recall_score, average='micro', labels=['deceased']),
-        'overall_accuracy': make_scorer(accuracy_score),
-        'overall_recall': make_scorer(recall_score , average='weighted')
-    }
-    
-    gs = GridSearchCV(
-        rf_model, 
-        param_grid = params, 
-        scoring = scoring, 
-        n_jobs = 2, 
-        refit = 'recall_on_deceased'
-    )
-    
-    gs.fit(x_train, y_train)
-    
-    print('\n\n>>GridSearchCV best estimator:')
-    print(gs.best_estimator_)
-    
-    res_df = pd.DataFrame(gs.cv_results_)
-    res_df.to_csv('../results/tunning-results-rand_forest.csv')
-    '''
-    
-    start_random_forest()
-    
-    print("-------------------------- end\n")
+start_random_forest()

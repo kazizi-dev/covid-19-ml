@@ -59,9 +59,8 @@ def get_grid_search_cv(x_train, y_train, model):
 
     scoring = {
         'f1_score_on_deceased' : make_scorer(f1_score, average='micro', labels=['deceased']),
-        'overall_f1_score': make_scorer(f1_score, average='weighted'),
-        'overall_accuracy': make_scorer(accuracy_score),
         'recall_on_deceased' : make_scorer(recall_score, average='micro', labels=['deceased']),
+        'overall_accuracy': make_scorer(accuracy_score),
         'overall_recall': make_scorer(recall_score , average='weighted')
     }
 
@@ -98,8 +97,6 @@ def start_ada_boost():
                                                 'param_n_estimators', 
                                                 'mean_test_f1_score_on_deceased', 
                                                 'rank_test_f1_score_on_deceased', 
-                                                'mean_test_overall_f1_score',
-                                                'rank_test_overall_f1_score', 
                                                 'mean_test_overall_accuracy', 
                                                 'rank_test_overall_accuracy', 
                                                 'mean_test_recall_on_deceased', 
@@ -122,4 +119,35 @@ def start_ada_boost():
     ada_model = pickle.load(open(path, 'rb'))
 
 
-start_ada_boost()
+# start_ada_boost()
+
+def test(csv_path, NE, LR):
+    import warnings
+    warnings.filterwarnings("ignore")
+    
+    # setup path for main.py file
+    os.chdir(os.getcwd())
+
+    # read the processed data
+    df = pd.read_csv(csv_path)
+
+    # split the dataset to train and test data
+    print("...splitting and encoding data")
+    x_train, y_train, x_test, y_test = split_dataset(df)
+
+    print('\n***************************** Ada Boost Results *****************************')
+    ada_model = AdaBoostClassifier(algorithm='SAMME.R', n_estimators=NE, learning_rate=LR)
+    ada_model.fit(x_train, y_train)
+
+    print_classification_report(ada_model, x_train, y_train, x_test, y_test)
+
+    print(f'Train Accuracy: {ada_model.score(x_train, y_train)}')
+    print(f'Test Accuracy: {ada_model.score(x_test, y_test)}')
+
+    print('...saving model as pickel file')
+    path = '../models/ada_boost_model_test.pkl'
+    pickle.dump(ada_model, open(path, 'wb'))
+    ada_model = pickle.load(open(path, 'rb'))
+
+
+test('../data/cases_train_processed.csv', 1000, 1)
