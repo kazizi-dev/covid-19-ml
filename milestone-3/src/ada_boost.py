@@ -36,7 +36,8 @@ def split_dataset(df):
     x_train, x_test, y_train, y_test = train_test_split(x_train, 
                                                         y_train, 
                                                         test_size=0.2, 
-                                                        random_state=0)
+                                                        random_state=0,
+                                                        stratify=y_train)
     return x_train, y_train, x_test, y_test
 
 
@@ -52,7 +53,7 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
 
 def get_grid_search_cv(x_train, y_train, model):
     params = {
-        'n_estimators': [10, 100, 1000], 
+        'n_estimators': [100, 1000, 2500], 
         'learning_rate': [1, 0.5, 0.1], 
         'algorithm': ['SAMME', 'SAMME.R']
     }
@@ -69,6 +70,7 @@ def get_grid_search_cv(x_train, y_train, model):
         param_grid = params, 
         scoring = scoring, 
         n_jobs = -1, 
+        cv = 3,
         refit = 'f1_score_on_deceased'
     )
 
