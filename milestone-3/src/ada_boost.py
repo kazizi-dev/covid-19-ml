@@ -4,12 +4,16 @@ from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import classification_report
 from sklearn.metrics import make_scorer, accuracy_score, recall_score, f1_score
-
+from sklearn.impute import SimpleImputer
 
 import os, warnings, pickle
 from pprint import pprint
 import pandas as pd
 import numpy as np
+import datetime
+
+from helper import clean_age_data, impute_age_data, clean_sex_data
+from helper import clean_date, clean_cols, remove_unused_cols, handle_skewed_data
 
 
 
@@ -24,6 +28,7 @@ def split_dataset(df):
     enc = OneHotEncoder()
     x_train = df.drop(['outcome'], axis=1).copy()
     categorical_data = x_train[['sex', 'country', 'province']]   
+    print('1111111111111')
     binary_data = enc.fit_transform(categorical_data).toarray()
     binary_labels = np.append(enc.categories_[0], enc.categories_[1])
     binary_labels = np.append(binary_labels, enc.categories_[2])
@@ -33,6 +38,11 @@ def split_dataset(df):
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
+    print('2222222222222')
+
+    from pprint import pprint
+    pprint(y_train)
+
     x_train, x_test, y_train, y_test = train_test_split(x_train, 
                                                         y_train, 
                                                         test_size=0.2, 
@@ -121,7 +131,7 @@ def start_ada_boost(csv_path):
     ada_model = pickle.load(open(path, 'rb'))
 
 
-start_ada_boost('../data/cases_train_processed.csv')
+#start_ada_boost('../data/cases_train_processed.csv')
 
 
 ### manually train the model on a given parameters NE and LR
@@ -155,3 +165,41 @@ def test(csv_path, NE, LR):
 
 
 # test('../data/cases_train_processed.csv', 1000, 1)
+
+
+def test_cases_test(csv_path):
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    # setup path for main.py file
+    os.chdir(os.getcwd())
+
+    # file_path = '../data/cases_test.csv'
+    # cases_df = pd.read_csv(file_path)
+
+    # ## display missing values for cases_train file
+    # print(f'---> null values for {file_path} file:')
+    # print(cases_df.isnull().sum())
+
+    # clean_sex_data(cases_df)
+    # impute_age_data(cases_df.age.tolist(), cases_df)
+    # # cases_df = handle_skewed_data(cases_df)
+    # cases_df = remove_unused_cols(cases_df)
+    # clean_date(cases_df)
+    # clean_cols(cases_df, ["country", "province"])
+
+    # cases_df.to_csv(csv_path, index=False)
+
+    # read the processed data
+    df = pd.read_csv(csv_path)[0:10]
+
+    # split the dataset to train and test data
+    print("...splitting and encoding data")
+    x_train, y_train, x_test, y_test = split_dataset(df)
+
+    from pprint import pprint
+    print("shit")
+
+
+test_cases_test('../data/cases_test_processed.csv')
+
