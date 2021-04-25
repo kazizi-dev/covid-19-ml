@@ -9,6 +9,10 @@ from sklearn.metrics import recall_score, f1_score
 import os, warnings, pickle
 import pandas as pd
 import numpy as np
+import datetime
+
+from helper import clean_age_data, impute_age_data, clean_sex_data
+from helper import clean_date, clean_cols, remove_unused_cols, handle_skewed_data
 
 
 
@@ -23,6 +27,7 @@ def split_dataset(df):
     enc = OneHotEncoder()
     x_train = df.drop(['outcome'], axis=1).copy()
     categorical_data = x_train[['sex', 'country', 'province']]   
+    print('1111111111111')
     binary_data = enc.fit_transform(categorical_data).toarray()
     binary_labels = np.append(enc.categories_[0], enc.categories_[1])
     binary_labels = np.append(binary_labels, enc.categories_[2])
@@ -32,6 +37,11 @@ def split_dataset(df):
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
+    print('2222222222222')
+
+    from pprint import pprint
+    pprint(y_train)
+
     x_train, x_test, y_train, y_test = train_test_split(x_train, 
                                                         y_train, 
                                                         test_size=0.2, 
