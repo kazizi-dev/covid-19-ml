@@ -1,13 +1,12 @@
-from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import classification_report
-from sklearn.metrics import make_scorer, accuracy_score, recall_score, f1_score
-
+from sklearn.metrics import make_scorer, accuracy_score
+from sklearn.metrics import recall_score, f1_score
 
 import os, warnings, pickle
-from pprint import pprint
 import pandas as pd
 import numpy as np
 
@@ -53,7 +52,7 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
 
 def get_grid_search_cv(x_train, y_train, model):
     params = {
-        'n_estimators': [100, 1000, 2500], 
+        'n_estimators': [10], 
         'learning_rate': [1, 0.5, 0.1], 
         'algorithm': ['SAMME', 'SAMME.R']
     }
@@ -77,7 +76,8 @@ def get_grid_search_cv(x_train, y_train, model):
     gs.fit(x_train, y_train)
     return gs
 
-def start_ada_boost(csv_path):
+
+def get_ada_boost_results(csv_path):
     warnings.filterwarnings("ignore")
     os.chdir(os.getcwd())
 
@@ -121,7 +121,6 @@ def start_ada_boost(csv_path):
     ada_model = pickle.load(open(path, 'rb'))
 
 
-start_ada_boost('../data/cases_train_processed.csv')
 
 
 ### manually train the model on a given parameters NE and LR
@@ -152,6 +151,3 @@ def test(csv_path, NE, LR):
     path = '../models/ada_boost_model_test.pkl'
     pickle.dump(ada_model, open(path, 'wb'))
     ada_model = pickle.load(open(path, 'rb'))
-
-
-# test('../data/cases_train_processed.csv', 1000, 1)
