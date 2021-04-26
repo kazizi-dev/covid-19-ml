@@ -40,7 +40,6 @@ def split_dataset(df):
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
-    print(x_train)
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
     return x_train, y_train, x_test, y_test
 
@@ -53,9 +52,9 @@ def get_grid_search_cv(x_train, y_train, model):
     }
 
     scoring = {
-        'f1_score_on_deceased' : make_scorer(f1_score, labels=['deceased']),
+        'f1_score_on_deceased' : make_scorer(f1_score, average='weighted', labels=['deceased']),
         'overall_accuracy': make_scorer(accuracy_score),
-        'recall_on_deceased' : make_scorer(recall_score, labels=['deceased']),
+        'recall_on_deceased' : make_scorer(recall_score, average='weighted', labels=['deceased']),
         'overall_recall': make_scorer(recall_score , average='weighted')
     }
 
@@ -82,6 +81,8 @@ def start_random_forest():
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
+    #print("x_train: ", x_train)
+    #print("y_train: ", y_train)
 
     ########### get best parameters ###########
     print("...tunning random forest model using GridSearchCV")
@@ -220,8 +221,12 @@ def check_if_file_valid(filename):
 
 # ============================================================================================
 
+# Train a model on different hyperparams
 start_random_forest()
+
+# Predict on test data
 encode_predict()
+
 check_if_file_valid('../results/predictions.txt')
 
 print("~~~~~~~~~~end~~~~~~~~~~")
