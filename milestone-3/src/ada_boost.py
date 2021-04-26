@@ -27,7 +27,6 @@ def split_dataset(df):
     enc = OneHotEncoder()
     x_train = df.drop(['outcome'], axis=1).copy()
     categorical_data = x_train[['sex', 'country', 'province']]   
-    print('1111111111111')
     binary_data = enc.fit_transform(categorical_data).toarray()
     binary_labels = np.append(enc.categories_[0], enc.categories_[1])
     binary_labels = np.append(binary_labels, enc.categories_[2])
@@ -37,11 +36,6 @@ def split_dataset(df):
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
-    print('2222222222222')
-
-    from pprint import pprint
-    pprint(y_train)
-
     x_train, x_test, y_train, y_test = train_test_split(x_train, 
                                                         y_train, 
                                                         test_size=0.2, 
@@ -68,7 +62,7 @@ def get_grid_search_cv(x_train, y_train, model):
     }
 
     scoring = {
-        'f1_score_on_deceased' : make_scorer(f1_score, average='micro', labels=['deceased']),
+        'f1_score_on_deceased' : make_scorer(f1_score, average='weighted', labels=['deceased']),
         'recall_on_deceased' : make_scorer(recall_score, average='micro', labels=['deceased']),
         'overall_accuracy': make_scorer(accuracy_score),
         'overall_recall': make_scorer(recall_score , average='weighted')
