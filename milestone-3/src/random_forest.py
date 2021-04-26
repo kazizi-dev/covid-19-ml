@@ -17,12 +17,14 @@ from sklearn.metrics import make_scorer, accuracy_score, recall_score, f1_score,
 
 import warnings
 
+from helper import clean_age_data, impute_age_data, clean_sex_data
+from helper import clean_date, clean_cols, clean_num_cols, remove_unused_cols, handle_skewed_data
 
 def split_dataset(df):
     """
     encode string attributes to convert to numeric values using label and one hot encoder
     """
-    
+    df = df.drop(df.columns[0], axis=1)
     # label encode date_confirmation attribute:
     df['date_confirmation'] = LabelEncoder().fit_transform(df['date_confirmation'].astype(str))
 
@@ -32,99 +34,27 @@ def split_dataset(df):
     # one hot encode to prevent correlation
     enc = OneHotEncoder()
     x_train = df.drop(['outcome'], axis=1).copy()
-    categorical_data = x_train[['sex', 'country', 'province']]   
+    categorical_data = x_train[['sex']]   
     binary_data = enc.fit_transform(categorical_data).toarray()
-    binary_labels = np.append(enc.categories_[0], enc.categories_[1])
-    binary_labels = np.append(binary_labels, enc.categories_[2])
+    binary_labels = enc.categories_[0]
+    #binary_labels = np.append(enc.categories_[0], enc.categories_[1])
+    #binary_labels = np.append(binary_labels, enc.categories_[2])
 
     encoded_df = pd.DataFrame(binary_data, columns=binary_labels)
     x_train = x_train.drop(['sex', 'country', 'province'], axis=1)
 
     # append converted data and numerical data
     x_train = x_train.join(encoded_df)
+    print(x_train)
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
     return x_train, y_train, x_test, y_test
 
-
-##############################
-###### 2.2 Build models ######
-##############################
-
-def build_random_forest(x_train, y_train, x_test, y_test):
-    """
-    build random forst classifier using RandomForestClassifier from sklearn
-    """
-
-    base_estimators = 100
-    max_estimators = 200
-    step_size = 10
-
-    for estimators in range(base_estimators, max_estimators, step_size):
-        model = RandomForestClassifier(n_estimators=estimators, random_state=0)
-        model.fit(x_train, y_train)
-    
-        path = '../models/random_forst_model.pkl'
-        with open(path, 'wb') as f:
-            pickle.dump(model, f)
-    
-        with open(path, 'rb') as f:
-            model = pickle.load(f)
-    
-        print('>> Random Forest Model:')
-        print(f'Train Accuracy: {model.score(x_train, y_train)}')
-        print(f'Test Accuracy: {model.score(x_test, y_test)}')
-    
-        print(" *****************************************************")
-        print(" ***************** USING {} TREES ********************".format(estimators))
-        print(" *****************************************************")
-        cross_validation_eval(model, x_train, y_train)
-        print_classification_report(model, x_train, y_train, x_test, y_test)
-    
-
-##############################
-####### 2.3 Evaluation #######
-##############################
-def cross_validation_eval(model, x_train, y_train):
-    """
-    """
-    scores = cross_val_score(model, x_train, y_train, scoring='accuracy', cv = 10)
-
-    print(f'10-fold CV for the model: \n{scores}')
-    print(f'CV Accuracy for the model: {scores.mean()*100}')
-
-
-def print_classification_report(model, x_train, y_train, x_test, y_test):
-    # stdsc = StandardScaler()
-
-    target_names = ['deceased']
-
-    # x_train_std = stdsc.fit_transform(x_train)
-    print('--- Classification report for train data:')
-    y_pred = model.predict(x_train)
-    #print(classification_report(y_train, y_pred, labels=target_names, output_dict=True))
-    #print(classification_report(y_train, y_pred))
-    
-    train_report = classification_report(y_train, y_pred, labels=target_names, output_dict=False)
-    #print(train_report['deceased'], "\n")
-    print(train_report)
-
-    # x_test_std = stdsc.fit_transform(x_test)
-    print('--- Classification report for test data:')
-    y_pred = model.predict(x_test)
-    #print(classification_report(y_test, y_pred, labels=target_names, output_dict=True))
-    #print(classification_report(y_test, y_pred))
-    
-    test_report = classification_report(y_test, y_pred, labels=target_names, output_dict=False)
-    #print(test_report['deceased'], "\n")
-    print(test_report)
-
-
 def get_grid_search_cv(x_train, y_train, model):
     params= {  
-        'n_estimators': [10, 100, 1000],
+        'n_estimators': [10, 100, 200, 400, 600, 800, 1000],
         'max_features': ['auto', 'sqrt', 'log2'],
-        'max_depth' : [None, 2, 10, 25, 50, 100],
-        'criterion' :['gini', 'entropy']
+        'max_depth' : [25],
+        'criterion' :['entropy']
     }
 
     scoring = {
@@ -138,7 +68,7 @@ def get_grid_search_cv(x_train, y_train, model):
         model, 
         param_grid = params, 
         scoring = scoring, 
-        n_jobs = -1, 
+        n_jobs = 2, 
         refit = 'f1_score_on_deceased'
     )
 
@@ -150,7 +80,10 @@ def start_random_forest():
     os.chdir(os.getcwd())
 
     ########### split and encode data ###########
-    df = pd.read_csv('../data/cases_less.csv')
+    #df = pd.read_csv('../data/cases_.csv')
+    df = pd.read_csv('../data/cases_train_processed.csv')
+    #df = pd.read_csv('../data/cases_test_joined.csv')
+    #df = df[:500]
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
@@ -158,7 +91,7 @@ def start_random_forest():
     ########### get best parameters ###########
     print("...tunning random forest model using GridSearchCV")
 
-    rf_model = RandomForestClassifier()
+    rf_model = RandomForestClassifier(random_state=0)
     gs = get_grid_search_cv(x_train, y_train, rf_model)
 
     gs_results = pd.DataFrame(gs.cv_results_)[['mean_fit_time',
@@ -191,6 +124,114 @@ def start_random_forest():
 
     print("***************************** end *****************************\n")
 
+def test_cases_test(csv_path):
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    # setup path for main.py file
+    os.chdir(os.getcwd())
+
+    #file_path = '../data/cases_test.csv'
+    #cases_df = pd.read_csv(file_path)
+    
+    # ========================================
+    # 1.5 JOINING DATASETS
+    # ========================================
+    
+    # Get cases dataset
+    filename = '../data/cases_test.csv'
+    cases_csv = open(filename, 'rt')
+    cases_df = pd.read_csv(filename)
+    cases_csv.close()
+    
+    # Get transformed location dataset
+    filename = '../data/location_transformed.csv'
+    loc_csv = open(filename, 'rt')
+    loc_df = pd.read_csv(filename)
+    loc_csv.close()
+    
+    # Join location and cases datasets
+    #joint_df = pd.merge(cases_df, loc_df, how="left")
+    #joint_df = joint_df.fillna(0)
+    cases_df = pd.merge(cases_df, loc_df, how="left")
+
+    ## display missing values for cases_train file
+    print(f'---> null values for {filename} file:')
+    print(cases_df.isnull().sum())
+
+    clean_sex_data(cases_df)
+    impute_age_data(cases_df.age.tolist(), cases_df)
+    # cases_df = handle_skewed_data(cases_df)
+    cases_df = remove_unused_cols(cases_df)
+    clean_date(cases_df)
+    clean_num_cols(cases_df, ['Confirmed', 'Deaths', 'Recovered', 'Active', 'Incidence_Rate', 'Case-Fatality_Ratio'])
+    #clean_cols(cases_df, ["country", "province"])
+    cases_df = cases_df.drop(['country', 'province'], axis=1)
+    
+    # writing to CSV
+    result_filename = '../data/cases_test_processed.csv'
+    #joint_df.to_csv(result_filename, index=False)
+    cases_df.to_csv(result_filename, index=False)
+
+    
+
+def make_prediction(model, test_df):   
+    
+    predictions = model.predict(test_df)
+    
+    test_df['outcome'] = predictions
+    
+    test_df.to_csv('../results/cases_test_predictions.csv', index=False)
+    print()
+    
+def encode_predict():
+    # process cases_test
+    data_path = '../data/cases_test_processed.csv' # name of processed test data
+    test_cases_test(data_path)
+    
+    # Load Model and Data
+    
+    path = '../models/random_forest_model.pkl'
+    
+    with open(path, 'rb') as f:
+        model = pickle.load(f)
+        
+    df = pd.read_csv('../data/cases_test_processed.csv')
+    
+    
+    # encoding joined cases_test data
+    
+    df['date_confirmation'] = LabelEncoder().fit_transform(df['date_confirmation'].astype(str))
+    #df['additional_information'] = LabelEncoder().fit_transform(df['additional_information'].astype(str))
+    
+    y_labels = df[['outcome']]
+    #y_labels = y_labels.ravel()
+    
+    enc = OneHotEncoder()
+    x = df.drop(['outcome'], axis=1).copy()
+    #categorical_data = x[['sex', 'country', 'province']]
+    categorical_data = x[['sex']]   
+    binary_data = enc.fit_transform(categorical_data).toarray()
+    binary_labels = enc.categories_[0]
+    #binary_labels = np.append(enc.categories_[0], enc.categories_[1])
+    #binary_labels = np.append(binary_labels, enc.categories_[2])
+    
+    encoded_df = pd.DataFrame(binary_data, columns=binary_labels)
+    x = x.drop(['sex'], axis=1)
+    x = x.join(encoded_df)
+    #x = x.join(y_labels)
+    #x = x.fillna(x.mean())
+    
+    x.to_csv('../data/cases_test_encoded.csv', index=False)
+    
+    make_prediction(model, x)
+    
+
+
+# ============================================================================================
 
 
 start_random_forest()
+encode_predict()
+
+print("~~~~~~~~~~end~~~~~~~~~~")
