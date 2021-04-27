@@ -126,7 +126,7 @@ def get_decision_tree_results(csv_path):
 
 
 
-def test(csv_path, NE, LR):
+def test(csv_path):
     import warnings
     warnings.filterwarnings("ignore")
 
@@ -134,14 +134,14 @@ def test(csv_path, NE, LR):
     os.chdir(os.getcwd())
 
     # read the processed data
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path)[0:400]
 
     # split the dataset to train and test data
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
 
     print('\n***************************** Decision Tree Results *****************************')
-    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None)
+    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=5)
     dtree_model.fit(x_train, y_train)
 
     print_classification_report(dtree_model, x_train, y_train, x_test, y_test)
@@ -153,3 +153,6 @@ def test(csv_path, NE, LR):
     path = '../models/dtree_boost_model_test.pkl'
     pickle.dump(dtree_model, open(path, 'wb'))
     dtree_model = pickle.load(open(path, 'rb'))
+
+
+test('../data/cases_train_processed.csv')
