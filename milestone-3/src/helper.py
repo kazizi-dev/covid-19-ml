@@ -93,6 +93,10 @@ def clean_cols(cases_df, attributes=["country", "province"]):
     cases_df.dropna(subset=['latitude'], inplace=True)
     cases_df.dropna(subset=['longitude'], inplace=True)
 
+def clean_num_cols(cases_df, attributes=['Active', 'Deaths', 'Confirmed', 'Recovered', 'Incidence_Rate', 'Case-Fatality_Ratio']):
+    for attribute in attributes: 
+        if cases_df[attribute].isnull().sum() > 0:
+            cases_df[attribute] = cases_df[attribute].replace(np.nan, 0)
 
 # drop unused columns
 def remove_unused_cols(df):       

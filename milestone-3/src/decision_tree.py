@@ -126,8 +126,6 @@ def get_decision_tree_results(csv_path):
 
 
 
-
-### manually train the model on a given parameters NE and LR
 def test(csv_path, NE, LR):
     import warnings
     warnings.filterwarnings("ignore")
@@ -143,7 +141,7 @@ def test(csv_path, NE, LR):
     x_train, y_train, x_test, y_test = split_dataset(df)
 
     print('\n***************************** Decision Tree Results *****************************')
-    dtree_model = DecisionTreeClassifier(random_state=0)
+    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None)
     dtree_model.fit(x_train, y_train)
 
     print_classification_report(dtree_model, x_train, y_train, x_test, y_test)
