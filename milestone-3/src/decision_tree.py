@@ -134,7 +134,7 @@ def test(csv_path):
     os.chdir(os.getcwd())
 
     # read the processed data
-    df = pd.read_csv(csv_path)[0:400]
+    df = pd.read_csv(csv_path)
 
     # split the dataset to train and test data
     print("...splitting and encoding data")
