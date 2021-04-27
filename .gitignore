@@ -3,3 +3,4 @@ src/test.py
 milestone-2/models/*
 milestone-3/models/*
 milestone-3/src/__pycache__/
+milestone-3/data
