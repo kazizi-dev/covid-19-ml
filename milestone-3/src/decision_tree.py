@@ -141,7 +141,7 @@ def test(csv_path, NE, LR):
     x_train, y_train, x_test, y_test = split_dataset(df)
 
     print('\n***************************** Decision Tree Results *****************************')
-    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth='None')
+    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=5)
     dtree_model.fit(x_train, y_train)
 
     print_classification_report(dtree_model, x_train, y_train, x_test, y_test)
