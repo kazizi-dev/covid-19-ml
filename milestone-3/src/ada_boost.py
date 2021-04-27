@@ -54,8 +54,8 @@ def print_classification_report(model, x_train, y_train, x_test, y_test):
 
 def get_grid_search_cv(x_train, y_train, model):
     params = {
-        'n_estimators': [10], 
-        'learning_rate': [1, 0.5], 
+        'n_estimators': [10, 100, 2500], 
+        'learning_rate': [1, 0.5, 0.1], 
         'algorithm': ['SAMME', 'SAMME.R']
     }
 
@@ -146,10 +146,6 @@ def test_cases_test(csv_path):
     # Join location and cases datasets
     cases_df = pd.merge(cases_df, loc_df, how="left")
 
-    ## display missing values for cases_train file
-    print(f'---> null values for {filename} file:')
-    print(cases_df.isnull().sum())
-
     clean_sex_data(cases_df)
     impute_age_data(cases_df.age.tolist(), cases_df)
     cases_df = remove_unused_cols(cases_df)
@@ -162,7 +158,7 @@ def test_cases_test(csv_path):
     cases_df.to_csv(result_filename, index=False)
 
 
-def make_prediction(model, test_df):   
+def make_prediction(model, test_df, SYSTEM_INPUT):   
     
     predictions = model.predict(test_df)
     
@@ -172,12 +168,12 @@ def make_prediction(model, test_df):
     test_df.to_csv('../results/cases_test_predictions.csv', index=False)
     
     # save to txt file
-    np.savetxt('../results/predictions.txt', predictions, fmt='%s')
+    np.savetxt('../results/adaboost-predictions.txt', predictions, fmt='%s')
     
     # fix newline 
     # from SO: https://stackoverflow.com/questions/28492954/numpy-savetxt-stop-newline-on-final-line
     with open('../results/adaboost-predictions.txt', 'w') as fout:
-        NEWLINE_SIZE_IN_BYTES = 1   # 1 
+        NEWLINE_SIZE_IN_BYTES = SYSTEM_INPUT  
         np.savetxt(fout, predictions, fmt='%s') # Use np.savetxt.
         fout.seek(0, os.SEEK_END) # Go to the end of the file.
         # Go backwards one byte from the end of the file.
@@ -185,7 +181,7 @@ def make_prediction(model, test_df):
         fout.truncate() # Truncate the file to this point.
 
 
-def encode_predict():
+def encode_predict_adaboost(SYSTEM_INPUT):
     # Process cases_test
     data_path = '../data/cases_test_processed.csv' # name of processed test data
     test_cases_test(data_path)
@@ -213,7 +209,7 @@ def encode_predict():
     
     x.to_csv('../data/cases_test_encoded.csv', index=False)
     
-    make_prediction(model, x)
+    make_prediction(model, x, SYSTEM_INPUT)
 
 
 def check_if_file_valid(filename):
@@ -227,12 +223,11 @@ def check_if_file_valid(filename):
 
 # ============================================================================================
 
-# Train a model on different hyperparams
-# get_ada_boost_results('../data/cases_train_processed.csv')
+def start_testing_ada_boost(SYSTEM_INPUT):
+    # Train a model on different hyperparams
+    get_ada_boost_results('../data/cases_train_processed.csv')
 
-# Predict on test data
-encode_predict()
+    # Predict on test data
+    encode_predict_adaboost(SYSTEM_INPUT)
 
-check_if_file_valid('../results/adaboost-predictions.txt')
-
-print("Status: SUCCESS")
+    check_if_file_valid('../results/adaboost-predictions.txt')

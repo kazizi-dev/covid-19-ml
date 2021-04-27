@@ -142,9 +142,9 @@ def test_cases_test(csv_path):
     # Join location and cases datasets
     cases_df = pd.merge(cases_df, loc_df, how="left")
 
-    ## display missing values for cases_train file
-    print(f'---> null values for {filename} file:')
-    print(cases_df.isnull().sum())
+    # ## display missing values for cases_train file
+    # print(f'---> null values for {filename} file:')
+    # print(cases_df.isnull().sum())
 
     clean_sex_data(cases_df)
     impute_age_data(cases_df.age.tolist(), cases_df)
@@ -159,7 +159,7 @@ def test_cases_test(csv_path):
 
     
 
-def make_prediction(model, test_df):   
+def make_prediction(model, test_df, SYSTEM_INPUT):   
     
     predictions = model.predict(test_df)
     
@@ -174,14 +174,14 @@ def make_prediction(model, test_df):
     # fix newline 
     # from SO: https://stackoverflow.com/questions/28492954/numpy-savetxt-stop-newline-on-final-line
     with open('../results/predictions.txt', 'w') as fout:
-        NEWLINE_SIZE_IN_BYTES = 2 # 2 on Windows?
+        NEWLINE_SIZE_IN_BYTES = SYSTEM_INPUT 
         np.savetxt(fout, predictions, fmt='%s') # Use np.savetxt.
         fout.seek(0, os.SEEK_END) # Go to the end of the file.
         # Go backwards one byte from the end of the file.
         fout.seek(fout.tell() - NEWLINE_SIZE_IN_BYTES, os.SEEK_SET)
         fout.truncate() # Truncate the file to this point.
     
-def encode_predict():
+def encode_predict(SYSTEM_INPUT):
     # Process cases_test
     data_path = '../data/cases_test_processed.csv' # name of processed test data
     test_cases_test(data_path)
@@ -209,7 +209,7 @@ def encode_predict():
     
     x.to_csv('../data/cases_test_encoded.csv', index=False)
     
-    make_prediction(model, x)
+    make_prediction(model, x, SYSTEM_INPUT)
     
 def check_if_file_valid(filename):
     assert filename.endswith('predictions.txt'), 'Incorrect filename'
@@ -221,12 +221,11 @@ def check_if_file_valid(filename):
 
 # ============================================================================================
 
-# Train a model on different hyperparams
-start_random_forest()
+def start_testing_random_forest(SYSTEM_INPUT):
+    # Train a model on different hyperparams
+    start_random_forest()
 
-# Predict on test data
-encode_predict()
+    # Predict on test data
+    encode_predict(SYSTEM_INPUT)
 
-check_if_file_valid('../results/predictions.txt')
-
-print("~~~~~~~~~~end~~~~~~~~~~")
+    check_if_file_valid('../results/predictions.txt')
