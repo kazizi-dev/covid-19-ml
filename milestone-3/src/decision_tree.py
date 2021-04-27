@@ -86,7 +86,7 @@ def get_decision_tree_results(csv_path):
     os.chdir(os.getcwd())
 
     ########### split and encode data ###########
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path)[0:400]
 
     print("...splitting and encoding data")
     x_train, y_train, x_test, y_test = split_dataset(df)
@@ -94,7 +94,7 @@ def get_decision_tree_results(csv_path):
     ########### get best parameters ###########
     print("...tunning decision tree model using GridSearchCV")
 
-    dtree_model = DecisionTreeClassifier()
+    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth='None')
     gs = get_grid_search_cv(x_train, y_train, dtree_model)
 
     gs_results = pd.DataFrame(gs.cv_results_)[['mean_fit_time', 
@@ -126,7 +126,7 @@ def get_decision_tree_results(csv_path):
 
 
 
-def test(csv_path):
+def test(csv_path, NE, LR):
     import warnings
     warnings.filterwarnings("ignore")
 
@@ -141,7 +141,7 @@ def test(csv_path):
     x_train, y_train, x_test, y_test = split_dataset(df)
 
     print('\n***************************** Decision Tree Results *****************************')
-    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth=5)
+    dtree_model = DecisionTreeClassifier(criterion='gini', splitter='best', max_depth='None')
     dtree_model.fit(x_train, y_train)
 
     print_classification_report(dtree_model, x_train, y_train, x_test, y_test)
@@ -153,6 +153,3 @@ def test(csv_path):
     path = '../models/dtree_boost_model_test.pkl'
     pickle.dump(dtree_model, open(path, 'wb'))
     dtree_model = pickle.load(open(path, 'rb'))
-
-
-test('../data/cases_train_processed.csv')
