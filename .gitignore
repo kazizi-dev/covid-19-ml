@@ -1,3 +1,5 @@
+milestone-1/results
+milestone-1/src/__pycache__/
 results/cases_joined.csv
 src/test.py
 milestone-2/models/*
