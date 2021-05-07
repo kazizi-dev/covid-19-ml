@@ -1,6 +1,3 @@
-<p align="center">
-  <img width=495 height=275 src="milestone-1/*.png" />
-</p>
 <h1 align="center">Data Mining for COVID-19</h1>
 
 ## 📝 **Project Details:**
@@ -25,3 +22,15 @@ The number of infected cases continue to rise everyday. Find a way to predict if
 1. Kourosh: preprocessing, data analysis, data visualizations, building and hyperparameter tuning of models, and documentation
 2. Julian: preprocessing, building models, and documentation
 3. Robert: preprocessing, documentation
+
+### **Data Visualization:**
+<p align="center">
+  <img width=495 height=275 src="milestone-1/age-distribution-for-female-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/age-distribution-for-male-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/age-distribution-for-unknown-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/sex-distribution-pie-chart.png"/>
+  <img width=495 height=275 src="milestone-1/location_cases.png"/>
+  <img width=495 height=275 src="milestone-1/country_with_most_death.png"/>
+  <img width=495 height=275 src="milestone-1/time-series-trend-per-outcome.png"/>
+  <img width=495 height=275 src="milestone-1/outcome-distribution-pie-chart.png"/>
+</p>
