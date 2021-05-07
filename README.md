@@ -25,12 +25,12 @@ The number of infected cases continue to rise everyday. Find a way to predict if
 
 ### **Data Visualization:**
 <p align="center">
-  <img width=495 height=275 src="milestone-1/age-distribution-for-female-histogram.png"/>
-  <img width=495 height=275 src="milestone-1/age-distribution-for-male-histogram.png"/>
-  <img width=495 height=275 src="milestone-1/age-distribution-for-unknown-histogram.png"/>
-  <img width=495 height=275 src="milestone-1/sex-distribution-pie-chart.png"/>
-  <img width=495 height=275 src="milestone-1/location_cases.png"/>
-  <img width=495 height=275 src="milestone-1/country_with_most_death.png"/>
-  <img width=495 height=275 src="milestone-1/time-series-trend-per-outcome.png"/>
-  <img width=495 height=275 src="milestone-1/outcome-distribution-pie-chart.png"/>
+  <img width=495 height=275 src="milestone-1/plots/age-distribution-for-female-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/plots/age-distribution-for-male-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/plots/age-distribution-for-unknown-histogram.png"/>
+  <img width=495 height=275 src="milestone-1/plots/sex-distribution-pie-chart.png"/>
+  <img width=495 height=275 src="milestone-1/plots/location_cases.png"/>
+  <img width=495 height=275 src="milestone-1/plots/country_with_most_death.png"/>
+  <img width=495 height=275 src="milestone-1/plots/time-series-trend-per-outcome.png"/>
+  <img width=495 height=275 src="milestone-1/plots/outcome-distribution-pie-chart.png"/>
 </p>
