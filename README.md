@@ -23,7 +23,7 @@ The number of infected cases continue to rise everyday. Find a way to predict if
 2. **Julian:** preprocessing, building models, and documentation
 3. **Robert:** preprocessing, documentation
 
-### **Data Visualization:**
+### **Data Visualization and Reports:**
 <p align="center">
   <img width=495 height=459 src="milestone-1/plots/null_values.png"/>
   <img width=495 height=459 src="milestone-3/plots/ada_boost_report.png"/>
