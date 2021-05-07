@@ -25,6 +25,9 @@ The number of infected cases continue to rise everyday. Find a way to predict if
 
 ### **Data Visualization:**
 <p align="center">
+  <img width=495 height=275 src="milestone-1/plots/null_values.png"/>
+  <img width=495 height=275 src="milestone-3/plots/ada_boost_report.png"/>
+  <img width=495 height=275 src="milestone-3/plots/random_forest_report.png"/>
   <img width=495 height=275 src="milestone-1/plots/age-distribution-for-female-histogram.png"/>
   <img width=495 height=275 src="milestone-1/plots/age-distribution-for-male-histogram.png"/>
   <img width=495 height=275 src="milestone-1/plots/age-distribution-for-unknown-histogram.png"/>
