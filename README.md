@@ -18,10 +18,10 @@ The number of infected cases continue to rise everyday. Find a way to predict if
     * Visualization: matplotlib and seaborn
 
 
-- ### 🤝 **Contributions:** 
-1. Kourosh: preprocessing, data analysis, data visualizations, building and hyperparameter tuning of models, and documentation
-2. Julian: preprocessing, building models, and documentation
-3. Robert: preprocessing, documentation
+### 🤝 **Contributions:** 
+1. **Kourosh:** preprocessing, analysis, visualizations, building models, and hyperparameter tuning, and documentation
+2. **Julian:** preprocessing, building models, and documentation
+3. **Robert:** preprocessing, documentation
 
 ### **Data Visualization:**
 <p align="center">
