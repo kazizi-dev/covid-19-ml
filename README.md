@@ -1,4 +1,4 @@
-<h1 align="center">Data Mining for COVID-19</h1>
+<h1 align="center">COVID-19 Predictive Modeling</h1>
 
 ## 📝 **Project Details:**
 Taking a data mining approach to understand a COVID-19 dataset, and using machine learning to make predictions.
